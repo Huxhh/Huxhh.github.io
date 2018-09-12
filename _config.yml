@@ -3,7 +3,7 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Huxh Blog
+title: Huxh
 subtitle: DO OR DIE
 description:
 keywords:
@@ -73,7 +73,8 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
+# theme: landscape
+theme: Anisina
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
