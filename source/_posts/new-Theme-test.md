@@ -1,6 +1,7 @@
 ---
 title: new Theme test
 date: 2018-09-12 21:54:44
+header-img: header-test.jpg
 tags:
 ---
 
