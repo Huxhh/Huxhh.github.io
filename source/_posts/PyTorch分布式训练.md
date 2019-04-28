@@ -1,6 +1,7 @@
 ---
 title: PyTorch分布式训练
 date: 2019-04-28 11:11:10
+header-img: JnxfSL2R/pytorch2.png
 tags:
 - PyTorch
 ---
