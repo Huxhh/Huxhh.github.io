@@ -1,5 +1,5 @@
 ---
-title: PyTorch分布式训练2
+title: PyTorch分布式训练
 date: 2019-04-28 11:11:10
 tags:
 - PyTorch
