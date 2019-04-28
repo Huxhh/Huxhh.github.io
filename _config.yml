@@ -21,6 +21,13 @@ permalink: :year/:month/:day/:title/
 permalink_defaults:
 
 
+# menu
+menu:
+  home: /
+  about: /about
+  tags: /tags
+
+
 # SNS settings
 # RSS:
 weibo_username: Huxhh
