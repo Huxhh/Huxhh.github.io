@@ -18,11 +18,11 @@
     <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
     <title>
         
-        
+        Mac 下 MySQL 导出数据设置及--secure-file-priv报错解决｜undefined
         
     </title>
 
-    <link rel="canonical" href="http://huxhh.github.io/archives/2018/">
+    <link rel="canonical" href="http://huxhh.github.io/2019/09/29/Mac-下-MySQL-导出数据设置及-secure-file-priv报错解决/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -46,7 +46,7 @@
 <!-- hack iOS CSS :active style -->
 <body ontouchstart="" class="animated fadeIn">
 <!-- hexo-inject:begin --><!-- hexo-inject:end --><!-- Navigation -->
-<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "false" data-istags="false
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
 " data-ishome = "false" >
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -137,150 +137,134 @@
 
 <!-- Main Content -->
 
+<!--only post-->
 
-<!-- Page Header -->
-<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 visible-xs-block visible-sm-block">
-    <div class="row">
-        <header class="intro-header">
-            <div class="container">
-                <div class="site-heading text-center">
-                    <div class="about-me">
-                        <!--移动端头部显示-->
-                        <img src="https://i.postimg.cc/y60hJQbm/newavater.jpg"/>
-                        <h5><a href="/about/">Hu Xiaohui</a></h5>
-                        <p>DO OR DIE</p>
+
+<img class="wechat-title-img"
+     src="https://i.postimg.cc/C5DJ0zrM/006y8m-N6ly1g7gi3do6tuj30ls0ban2d.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('https://i.postimg.cc/C5DJ0zrM/006y8m-N6ly1g7gi3do6tuj30ls0ban2d.jpg')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>Mac 下 MySQL 导出数据设置及--secure-file-priv报错解决</h1>
+                    
+                    <span class="meta">
+                         作者 Hu Xiaohui
+                        <span>
+                          日期 2019-09-29
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#MySQL"
+                           title="MySQL">MySQL</a>
+                        
                     </div>
                 </div>
             </div>
-        </header>
+        </div>
     </div>
-</div>
-<!-- Main Content -->
-<div class="container custom-haojen-container">
-    <!-- Post Container -->
-    <div class="row">
-        <div class="col-lg-8 col-lg-offset-1 col-md-8 col-md-offset-1 col-sm-12 col-xs-12 post-container">
-            <!-- Main Content -->
+    <div class="post-title-haojen">
+        <span>
+            Mac 下 MySQL 导出数据设置及--secure-file-priv报错解决
+        </span>
+    </div>
+</header>
 
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
+                <p>在把MySQL中的数据导入到一个文件当中的时候遇到了一些问题，在此记录一下。</p>
+<h3 id="语句"><a class="markdownIt-Anchor" href="#语句"></a> 语句</h3>
+<p>MySQL中导出数据的语句是 <strong>SELECT … INTO OUTFILE</strong> ，举例来说：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">select * from test_info   </span><br><span class="line"> </span><br><span class="line">into outfile &apos;/tmp/test.csv&apos;   </span><br><span class="line"> </span><br><span class="line">fields terminated by &apos;,&apos;        --字段间以,号分隔</span><br><span class="line"> </span><br><span class="line">optionally enclosed by &apos;&quot;&apos;      --字段用&quot;号括起</span><br><span class="line"> </span><br><span class="line">escaped by &apos;&quot;&apos;   　　　　　　     --字段中使用的转义符为&quot;</span><br><span class="line"> </span><br><span class="line">lines terminated by &apos;\r\n&apos;;　　  --行以\r\n结束</span><br></pre></td></tr></table></figure>
+<p>命令不是特别复杂，本文的重点也不在此。重点在于如果没有提前修改配置的话，在运行此命令时会出问题。</p>
+<h3 id="修改配置"><a class="markdownIt-Anchor" href="#修改配置"></a> 修改配置</h3>
+<p>首先遇到的问题是，在我使用的MySQL 5.7中报出了以下错误：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ERROR 1290 (HY000): The MySQL server is running with the --secure-file-priv option so it cannot execute this statement</span><br></pre></td></tr></table></figure>
+<p>经过查询得知是需要修改–secure-file-priv参数，这一参数可以使用语句 show variables like ‘%secure%’; 查询，如果结果为NULL，则需要更改，如下图所示:<br>
+<img src="https://tva1.sinaimg.cn/large/006y8mN6ly1g7ghqnzk79j31o60to1kx.jpg" alt="1"></p>
+<p>修改改参数需要到MySQL的配置文件中修改，mac中MySQL的配置文件为 <code>/private/etc/my.cnf</code></p>
+<p>打开此文件，在 <code>[musqld]</code> 下面加上 <code>secure_file_priv='/tmp/path/'</code> 即可，如下图所示：<br>
+<img src="https://tva1.sinaimg.cn/large/006y8mN6ly1g7ghskip44j30zm0e2qfg.jpg" alt="2"></p>
+<p><strong>要注意的是：Mac当中只可以把该目录设置在<code>/tmp/</code>文件夹下，设置在其他位置会导致MySQL启动报错</strong></p>
+<p>但此时直接导出文件仍会报错:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ERROR 1 (HY000): Can&apos;t create/write to file &apos;test.csv&apos; (Errcode: 13 - Permission denied)</span><br></pre></td></tr></table></figure>
+<p>这里的原因是MySQL是使用_mysql 用户来写文件的，而该用户对该文件夹没有操作权限，因此需要执行以下语句：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown _mysql:_mysql /private/tmp/mysql_output/</span><br></pre></td></tr></table></figure>
+<p>最后重启MySQL，重新执行命令发现执行成功。</p>
 
+                <hr>
+                
 
-<div class="post-preview "
-     style="background-image: url('https://i.postimg.cc/PrpjzD1Q/bayes2.jpg')">
-    <a href="/2018/10/18/机器学习笔记（一）贝叶斯分类器/">
-        <h2 class="post-title">
-            机器学习笔记（一）贝叶斯分类器
-        </h2>
-        <p class="post-meta">
-            <i class="fa fa-calendar" aria-hidden="true"></i> 2018-10-18
-        </p>
-        
-        <div class="post-content-preview">
-            <p>
-                 机器学习笔记（一）贝叶斯分类器
- 前言
-虽然前一两年就陆陆续续的了解了不少机器学习相关的知识，也在Coursera上学完了Andrew Ng的课程，但知识整体比较零碎，现在上了研究生开始上机器学习这一门课，算是比较系统的学习各个机器学习算法，因此做一些记录与总结。一方面起到课后复习汇总要点的作..
-            </p>
-        </div>
-    </a>
-
-</div>
-
-<hr>
-
-
-
-
-<!-- 翻页 pager -->
-
-<ul class="pager">
-    
-    
-</ul>
-
-
-        </div>
-        <!-- Sidebar Container -->
-        <div class="
-                col-lg-3 col-lg-offset-0
-                col-md-3 col-md-offset-0
-                col-sm-12
-                col-xs-12
-                sidebar-container
-            ">
-
-            <!-- About Me -->
-            <section class="visible-md visible-lg" style="padding: 0 18px">
-                <div class="short-about">
-                    <!--侧边栏头像-->
+                <ul class="pager">
                     
-                    <img src="https://i.postimg.cc/y60hJQbm/newavater.jpg"/>
                     
-                    <h5><a href="/about/">Hu Xiaohui</a></h5>
+                    <li class="next">
+                        <a href="/2019/04/28/PyTorch分布式训练/" data-toggle="tooltip" data-placement="top"
+                           title="PyTorch分布式训练">Next Post &rarr;</a>
+                    </li>
                     
-                    <p>DO OR DIE</p>
-                    
-                    <hr>
-                    <!-- SNS Link 社交 -->
-                    <ul class="list-inline">
-                        
-                        
-                        <li>
-                            <a target="_blank" href="https://twitter.com/StBarca">
-                                        <span class="fa-stack fa-lg">
-                                            <i class="fa fa-circle fa-stack-2x"></i>
-                                            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
-                                        </span>
-                            </a>
-                        </li>
-                        
-                        
-                        <li>
-                            <a target="_blank" href="https://www.zhihu.com/people/hu-xiao-hui-69">
-                                        <span class="fa-stack fa-lg">
-                                            <i class="fa fa-circle fa-stack-2x"></i>
-                                            <i class="fa  fa-stack-1x fa-inverse">知</i>
-                                        </span>
-                            </a>
-                        </li>
-                        
+                </ul>
 
-                        
-                        <li>
-                            <a target="_blank" href="http://weibo.com/Huxhh">
-                                        <span class="fa-stack fa-lg">
-                                            <i class="fa fa-circle fa-stack-2x"></i>
-                                            <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
-                                        </span>
-                            </a>
-                        </li>
-                        
+                
 
-                        
+                
 
-                        
-                        <li>
-                            <a target="_blank" href="https://github.com/Huxhh">
-                                        <span class="fa-stack fa-lg">
-                                            <i class="fa fa-circle fa-stack-2x"></i>
-                                            <i class="fa fa-github fa-stack-1x fa-inverse"></i>
-                                        </span>
-                            </a>
-                        </li>
-                        
 
-                        
-                    </ul>
+                <!--加入新的评论系统-->
+                
+
+                
+
+            </div>
+
+            <div class="hidden-xs col-sm-3 toc-col">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#语句"><span class="toc-text"> 语句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改配置"><span class="toc-text"> 修改配置</span></a></li></ol>
                 </div>
-            </section>
-
-            <!-- Featured Tags  标签 -->
-            
-
-            
-
+            </div>
         </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
     </div>
-</div>
+</article>
+
+
+
+
+
+
 
 <!-- Footer -->
 <!-- Footer -->
