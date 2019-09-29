@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-person-128.png">
+    <link rel="alternate" type="application/atom+xml" title="Huxh" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        PyTorch分布式训练｜undefined
+        
+    </title>
+
+    <link rel="canonical" href="http://huxhh.github.io/2019/04/28/PyTorch分布式训练/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+    <link href="https://cdn.bootcss.com/KaTeX/0.7.1/katex.min.css" rel="stylesheet"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- hexo-inject:begin --><!-- hexo-inject:end --><!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    Huxh
+                </span>
+                's Blog
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+                        
+							
+								
+							
+						
+                    
+                        
+							
+                        <li>
+                            <a href="/Tags/">Tags</a>
+                        </li>
+							
+						
+                    
+					
+					
+						<li>
+							<a href="/about">About</a>
+						</li>
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="https://i.postimg.cc/JnxfSL2R/pytorch2.png">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('https://i.postimg.cc/JnxfSL2R/pytorch2.png')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>PyTorch分布式训练</h1>
+                    
+                    <span class="meta">
+                         作者 Hu Xiaohui
+                        <span>
+                          日期 2019-04-28
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#PyTorch"
+                           title="PyTorch">PyTorch</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            PyTorch分布式训练
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
+                <h1 id="pytorch分布式训练"><a class="markdownIt-Anchor" href="#pytorch分布式训练"></a> PyTorch分布式训练</h1>
+<p>分布式训练已经成为如今训练深度学习模型的一个必备工具，但pytorch默认使用单个GPU进行训练，如果想用使用多个GPU乃至多个含有多块GPU的节点进行分布式训练的时候，需要在代码当中进行修改，这里总结一下几种使用pytorch进行分布式训练的方式。</p>
+<h2 id="环境"><a class="markdownIt-Anchor" href="#环境"></a> 环境</h2>
+<p>本文使用的环境为：</p>
+<ul>
+<li>python =3.7</li>
+<li>pytorch = 1.0</li>
+<li>CUDA = 8.0</li>
+</ul>
+<h2 id="使用单个gpu"><a class="markdownIt-Anchor" href="#使用单个gpu"></a> 使用单个GPU</h2>
+<p>pytorch中<code>pytorch.cuda</code>用于设置和运行<code>CUDA</code>操作，它会跟踪当前选定的GPU，并且您分配的所有CUDA张量将默认在该设备上创建。所选设备可以使用 <code>torch.cuda.device</code> 环境管理器进行更改。<br>
+pytorch中想要使用GPU进行模型训练非常简单，首先需要使用代码<code>torch.cuda.is_available()</code>判断当前环境是否可以使用GPU，如果返回<code>False</code>那么证明GPU不可用，需要检查软件包或驱动等是否安装正确。<br>
+当GPU可用时，可以使用<code>torch.device()</code>创建一个<code>torch.device</code>对象，例如<code>torch.device('cuda')</code>或使用<code>torch.device('cuda:0')</code>指定GPU，该对象可以将张量移动至GPU上。假设有一个张量<code>x</code>，我们可以使用<code>x.cuda()</code>或<code>x.to(device)</code>的方式将其移动至GPU上，这两种方式可以视作是等价的，并没有太大的区别，Variable与模型同理，也可以使用这样的方式进行移动。接下来按照征程的操作即可以进行训练。</p>
+<h2 id="单机使用多个gpu"><a class="markdownIt-Anchor" href="#单机使用多个gpu"></a> 单机使用多个GPU</h2>
+<p>单机使用多个GPU有两种方式，<code>torch.nn.DataParallel()</code>与<code>torch.nn.parallel.DistributedDataParallel</code><br>
+其中<code>torch.nn.DataParallel()</code>智能实现在单机多卡中进行分布式训练，而<code>torch.nn.parallel.DistributedDataParallel</code>则是新方法，在单机多卡和多机多卡都可以训练。官方建议使用最新的<code>torch.nn.parallel.DistributedDataParallel</code>，因为即使在单机多卡上，新的方法在效率上也要比旧的表现好。</p>
+<h3 id="torchnndataparallel"><a class="markdownIt-Anchor" href="#torchnndataparallel"></a> torch.nn.DataParallel()</h3>
+<p>使用该方法的方式很简单，假设我们已经构建了一个模型<code>NET</code>，则只需要：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">model = NET()</span><br><span class="line">model = torch.nn.DataParallel()</span><br><span class="line">mode.cuda()</span><br></pre></td></tr></table></figure>
+<p>将模型分发到各个GPU上，接下来既可以使用多个GPU同时进行训练。</p>
+<blockquote>
+<p>值得注意的是，这里torch是把模型输入的batch_size按照GPU的个数进行均分，因此如果希望保持与单个GPU训练时同样的batch_sizze则需要按照GPU的个数n对batch_size进行扩展到batch_size *n</p>
+</blockquote>
+<blockquote>
+<p>还有一点是torch默认输入的第一维是batch_size的大小，因此会直接在第一维上进行分割，因此构造batch数据时需要注意。</p>
+</blockquote>
+<h3 id="torchnnparalleldistributeddataparallel"><a class="markdownIt-Anchor" href="#torchnnparalleldistributeddataparallel"></a> torch.nn.parallel.DistributedDataParallel（）</h3>
+<p><code>torch.nn.parallel.DistributedDataParallel</code>是pytorch1.0新提供的方法。该计算模型并没有采用主流的Parameter Server结构，而是直接用了Uber Horovod的形式，也是百度开源的RingAllReduce算法。算法细节此处不表。<br>
+使用该方法首先需要进行初始化<code>torch.distributed.init_process_group(backend, init_method='env://', **kwargs)</code>，其中的参数有：</p>
+<ul>
+<li>backend(str): 后端选择，包括 gloo,nccl,mpi</li>
+<li>init_method(str，optional): 用来初始化包的URL, 我理解是一个用来做并发控制的共享方式</li>
+<li>world_size(int, optional): 参与这个工作的进程数</li>
+<li>rank(int,optional): 当前进程的rank</li>
+<li>group_name(str,optional): 用来标记这组进程名的</li>
+</ul>
+<p>其中初始化方式有三种：</p>
+<ol>
+<li>
+<p><strong>TCP initialization</strong><br>
+tcp:// IP组播（要求所有进程都在同一个网络中）比较好理解,   以TCP协议的方式进行不同分布式进程之间的数据交流，需要设置一个端口，不同进程之间公用这一个端口，并且设置host的级别和host的数量。设计两个参数rank和world_size。其中rank为host的编号，默认0为主机，端口应该位于该主机上。world_size为分布式主机的个数。<br>
+具体的可以初始化为：<code>tcp://127.0.0.1:12345</code></p>
+</li>
+<li>
+<p><strong>Shared file-system initialization</strong><br>
+file:// 共享文件系统（要求所有进程可以访问单个文件系统）有共享文件系统可以选择<br>
+提供的第二种方式是文件共享，机器有共享的文件系统，故可以采用这种方式，也避免了基于TCP的网络传输。这里使用方式是使用绝对路径在指定一个共享文件系统下不存在的文件。<br>
+具体的：<code>file://PathToShareFile/MultiNode</code></p>
+</li>
+<li>
+<p><strong>Environment variable initialization</strong><br>
+env:// 环境变量（需要您手动分配等级并知道所有进程可访问节点的地址）默认是这个</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MASTER_PORT - required; has to be a free port on machine with rank 0</span><br><span class="line">MASTER_ADDR - required (except for rank 0); address of rank 0 node</span><br><span class="line">WORLD_SIZE - required; can be set either here, or in a call to init function</span><br><span class="line">RANK - required; can be set either here, or in a call to init function</span><br></pre></td></tr></table></figure>
+<p>官方示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Node 1: (IP: 192.168.1.1, and has a free port: 1234)</span><br><span class="line"> </span><br><span class="line">&gt;&gt;&gt; python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE</span><br><span class="line">           --nnodes=2 --node_rank=0 --master_addr=&quot;192.168.1.1&quot;</span><br><span class="line">           --master_port=1234 YOUR_TRAINING_SCRIPT.py (--arg1 --arg2 --arg3</span><br><span class="line">           and all other arguments of your training script)</span><br><span class="line">Node 2:</span><br><span class="line"> </span><br><span class="line">&gt;&gt;&gt; python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE</span><br><span class="line">           --nnodes=2 --node_rank=1 --master_addr=&quot;192.168.1.1&quot;</span><br><span class="line">           --master_port=1234 YOUR_TRAINING_SCRIPT.py (--arg1 --arg2 --arg3</span><br><span class="line">           and all other arguments of your training script)</span><br></pre></td></tr></table></figure>
+<p>在代码中进行初始化时，需要注意的一点是由于需要创建N个进程分别运行在0到N-1号GPU上，因此需要在代码中手动进行指定代码运行的GPU号，使用如下代码：</p>
+<blockquote>
+<p>torch.cuda.set_device(i)<br>
+其中i是0到N-1中的一个。同时在代码中也应该做如下的指定操作：</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">torch.distributed.init_process_group(backend=&apos;nccl&apos;, world_size=4, rank=, init_method=&apos;...&apos;)</span><br><span class="line">model = DistributedDataParallel(model, device_ids=[i], output_device=i)</span><br></pre></td></tr></table></figure>
+<p>在<code>torch.distributed.init_process_group()</code>中word_size与rank参数是必需的。代表了工作的进程数与当前进程的rank。<br>
+接下来可以启动进行分布式训练，官方也提供了相应的启动方式。</p>
+<h4 id="启动方式"><a class="markdownIt-Anchor" href="#启动方式"></a> 启动方式</h4>
+<p>在<code>torch.distributed</code>当中提供了一个用于启动的程序<code>torch.distributed.launch</code>，此帮助程序可用于为每个节点启动多个进程以进行分布式训练，它在每个训练节点上产生多个分布式训练进程。<br>
+这个工具可以用作CPU或者GPU，如果被用于GPU，每个GPU产生一个进程进行训练。</p>
+<p>该工具既可以用来做单节点多GPU训练，也可用于多节点多GPU训练。如果是单节点多GPU，将会在单个GPU上运行一个分布式进程，据称可以非常好地改进单节点训练性能。如果用于多节点分布式训练，则通过在每个节点上产生多个进程来获得更好的多节点分布式训练性能。如果有Infiniband接口则加速比会更高。</p>
+<p>在单节点分布式训练或多节点分布式训练的两种情况下，该工具将为每个节点启动给定数量的进程（–nproc_per_node）。如果用于GPU培训，则此数字需要小于或等于当前系统上的GPU数量（nproc_per_node），并且每个进程将在从GPU 0到GPU（nproc_per_node - 1）的单个GPU上运行。<br>
+启动的命令为：</p>
+<blockquote>
+<p>python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE<br>
+YOUR_TRAINING_SCRIPT.py (–arg1 --arg2 --arg3 and all other<br>
+arguments of your training script</p>
+</blockquote>
+<p><strong>注意</strong> 使用启动工具进行启动时，会产生<code>--local_rank</code>参数，需要在代码中使用如下类似代码处理：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import argparser</span><br><span class="line"></span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(&apos;--local_rank&apos;, type=int, ...)</span><br><span class="line">args = parser..parse_args()</span><br></pre></td></tr></table></figure>
+<p>这一参数的作用是为各个进程分配rank号，因此可以直接使用这个<code>local_rank</code>参数作为<code>torch.distributed.init_process_group()</code>当中的参数rank，同时也可以作为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">torch.distributed.init_process_group(backend=&apos;nccl&apos;, world_size=4, rank=, init_method=&apos;...&apos;)</span><br><span class="line">model = DistributedDataParallel(model, device_ids=[i], output_device=i)</span><br></pre></td></tr></table></figure>
+<p>中的i。</p>
+<h2 id="多机使用多个gpu"><a class="markdownIt-Anchor" href="#多机使用多个gpu"></a> 多机使用多个GPU</h2>
+<p>相比于单机使用多个GPu，最大的区别在于启动方式的不同，假设有两个节点时：<br>
+Node 1: (IP: 192.168.1.1, and has a free port: 1234)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE</span><br><span class="line">           --nnodes=2 --node_rank=0 --master_addr=&quot;192.168.1.1&quot;</span><br><span class="line">           --master_port=1234 YOUR_TRAINING_SCRIPT.py (--arg1 --arg2 --arg3</span><br><span class="line">           and all other arguments of your training script)</span><br></pre></td></tr></table></figure>
+<p>Node 2:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE</span><br><span class="line">           --nnodes=2 --node_rank=1 --master_addr=&quot;192.168.1.1&quot;</span><br><span class="line">           --master_port=1234 YOUR_TRAINING_SCRIPT.py (--arg1 --arg2 --arg3</span><br><span class="line">           and all other arguments of your training script)</span><br></pre></td></tr></table></figure>
+<p>增加的参数有nnodes代表机器即节点的个数，node_rank代表节点的rank，master-addr，master_port代表主节点的地址与端口号用于通信。<br>
+至此就介绍完了pytorch的分布式训练的基础内容。</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<p><a href="https://pytorch.org/docs/master/distributed.html" target="_blank" rel="noopener">https://pytorch.org/docs/master/distributed.html</a><br>
+<a href="https://blog.csdn.net/zwqjoy/article/details/89415933" target="_blank" rel="noopener">https://blog.csdn.net/zwqjoy/article/details/89415933</a><br>
+<a href="https://github.com/pytorch/pytorch/blob/master/torch/nn/parallel/distributed.py" target="_blank" rel="noopener">https://github.com/pytorch/pytorch/blob/master/torch/nn/parallel/distributed.py</a><br>
+<a href="https://www.jianshu.com/p/be9f8b90a1b8?utm_campaign=hugo&amp;utm_medium=reader_share&amp;utm_content=note&amp;utm_source=weixin-friends" target="_blank" rel="noopener">https://www.jianshu.com/p/be9f8b90a1b8?utm_campaign=hugo&amp;utm_medium=reader_share&amp;utm_content=note&amp;utm_source=weixin-friends</a><br>
+<a href="https://juejin.im/entry/5c5f94fd518825629a779f51" target="_blank" rel="noopener">https://juejin.im/entry/5c5f94fd518825629a779f51</a></p>
+
+                <hr>
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2019/09/29/Mac-下-MySQL-导出数据设置及-secure-file-priv报错解决/" data-toggle="tooltip" data-placement="top"
+                           title="Mac 下 MySQL 导出数据设置及--secure-file-priv报错解决">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2018/10/18/机器学习笔记（一）贝叶斯分类器/" data-toggle="tooltip" data-placement="top"
+                           title="机器学习笔记（一）贝叶斯分类器">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+
+                
+
+
+                <!--加入新的评论系统-->
+                
+
+                
+
+            </div>
+
+            <div class="hidden-xs col-sm-3 toc-col">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#pytorch分布式训练"><span class="toc-text"> PyTorch分布式训练</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#环境"><span class="toc-text"> 环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用单个gpu"><span class="toc-text"> 使用单个GPU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#单机使用多个gpu"><span class="toc-text"> 单机使用多个GPU</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#torchnndataparallel"><span class="toc-text"> torch.nn.DataParallel()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#torchnnparalleldistributeddataparallel"><span class="toc-text"> torch.nn.parallel.DistributedDataParallel（）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#启动方式"><span class="toc-text"> 启动方式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#多机使用多个gpu"><span class="toc-text"> 多机使用多个GPU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text"> 参考</span></a></li></ol></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/StBarca">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/hu-xiao-hui-69">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/Huxhh">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/Huxhh">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Huxh 2019
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                    <br>
+                    Theme by <a href="https://haojen.github.io/">Haojen Ma</a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://huxhh.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="https://i.postimg.cc/y60hJQbm/newavater.jpg"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+
+</html>
